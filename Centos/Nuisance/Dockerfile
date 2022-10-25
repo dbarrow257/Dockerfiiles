@@ -1,10 +1,16 @@
+FROM dbarrow257/gibuu_21:latest as gibuu_build
+FROM dbarrow257/nuwro_21.09:latest as nuwro_build
 FROM dbarrow257/neut_5.5.0:latest as neut_build
 FROM dbarrow257/genie_3.0.6:latest as genie_build
 FROM dbarrow257/root_6.24.06:latest as root_build
 
 FROM dbarrow257/buildbox:latest
 
+COPY --from=gibuu_build /opt/GiBUU /opt/GiBUU
+COPY --from=nuwro_build /opt/nuwro /opt/nuwro
+
 COPY --from=neut_build /opt/neut /opt/neut
+COPY --from=neut_build /opt/neut-src /opt/neut-src
 COPY --from=neut_build /opt/cernlib /opt/cernlib
 
 COPY --from=genie_build /opt/genie /opt/genie
@@ -56,6 +62,16 @@ ENV NEUT_CRSPATH=${NEUT_ROOT}/share/neut/crsdat
 ENV NEUT_CARDS=${NEUT_ROOT}/share/neut/Cards
 ENV PKG_CONFIG_PATH=${NEUT_ROOT}:${PKG_CONFIG_PATH}
 
+ENV NUWRO_VERSION=21.09
+ENV NUWRO=/opt/nuwro/${NUWRO_VERSION}/
+ENV PATH=/opt/nuwro/${NUWRO_VERSION}/bin:${PATH}
+ENV ROOT_INCLUDE_PATH=/opt/nuwro/${NUWRO_VERSION}/src:${ROOT_INCLUDE_PATH}
+
+ENV GiBUU=/opt/GiBUU/2021
+ENV GiBUU_JOBCARDS=/opt/GiBUU/2021/jobCards
+ENV GiBUU_BUUINPUTS=/opt/GiBUU/2021/buuinput
+ENV PATH=${GiBUU}/bin:${PATH}
+
 WORKDIR /
 #================================================================================================
 #Nuisance
@@ -76,3 +92,13 @@ ENV PATH=${NUISANCE}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${NUISANCE}/lib:${LD_LIBRARY_PATH}
 
 WORKDIR /
+#================================================================================================
+#Run Scripts
+
+WORKDIR /opt
+
+RUN git clone https://github.com/dbarrow257/GeneratorRunScripts GeneratorTools
+WORKDIR /opt/GeneratorTools
+
+
+
